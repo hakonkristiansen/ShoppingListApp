@@ -1,20 +1,69 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+import { TouchableOpacity, Text } from 'react-native';
+import { AppProvider, useAppStore } from './store';
+import ShoppingListScreen from './screens/ShoppingListScreen';
+import InventoryScreen from './screens/InventoryScreen';
 
-export default function App() {
+const Tab = createBottomTabNavigator();
+
+function LangToggle() {
+  const { language, toggleLanguage } = useAppStore();
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <TouchableOpacity onPress={toggleLanguage} style={{ marginRight: 16 }}>
+      <Text style={{ color: '#fff', fontWeight: '700', fontSize: 14 }}>
+        {language === 'en' ? 'NO' : 'EN'}
+      </Text>
+    </TouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+function Tabs() {
+  const { language } = useAppStore();
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        tabBarActiveTintColor: '#2D6A4F',
+        tabBarInactiveTintColor: '#aaa',
+        headerStyle: { backgroundColor: '#2D6A4F' },
+        headerTintColor: '#fff',
+        headerTitleStyle: { fontWeight: '700' },
+        headerRight: () => <LangToggle />,
+      }}
+    >
+      <Tab.Screen
+        name="ShoppingList"
+        component={ShoppingListScreen}
+        options={{
+          title: language === 'en' ? 'Shopping List' : 'Handleliste',
+          tabBarLabel: language === 'en' ? 'Shopping List' : 'Handleliste',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="cart-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Inventory"
+        component={InventoryScreen}
+        options={{
+          title: language === 'en' ? 'Inventory' : 'Beholdning',
+          tabBarLabel: language === 'en' ? 'Inventory' : 'Beholdning',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="cube-outline" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
+
+export default function App() {
+  return (
+    <AppProvider>
+      <NavigationContainer>
+        <Tabs />
+      </NavigationContainer>
+    </AppProvider>
+  );
+}
