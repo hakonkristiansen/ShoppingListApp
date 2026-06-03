@@ -6,7 +6,7 @@ const AppContext = createContext();
 export const CATEGORIES = ['Fridge', 'Freezer', 'Pantry'];
 
 export function AppProvider({ children }) {
-  const [language, setLanguage] = useState('no');
+  const [language, setLanguage] = useState('en');
   const [inventory, setInventory] = useState([]);
   const [shoppingList, setShoppingList] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -30,14 +30,23 @@ export function AppProvider({ children }) {
     }
   }, [shoppingList, isLoaded]);
 
+  // Save language whenever it changes
+  useEffect(() => {
+    if (isLoaded) {
+      AsyncStorage.setItem('language', language);
+    }
+  }, [language, isLoaded]);
+
   async function loadData() {
     try {
-      const [inventoryData, shoppingData] = await Promise.all([
+      const [inventoryData, shoppingData, languageData] = await Promise.all([
         AsyncStorage.getItem('inventory'),
         AsyncStorage.getItem('shoppingList'),
+        AsyncStorage.getItem('language'),
       ]);
       if (inventoryData) setInventory(JSON.parse(inventoryData));
       if (shoppingData) setShoppingList(JSON.parse(shoppingData));
+      if (languageData) setLanguage(languageData);
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -82,8 +91,8 @@ export function AppProvider({ children }) {
     );
   }
 
-  function toggleLanguage() {
-    setLanguage(prev => prev === 'en' ? 'no' : 'en');
+  function changeLanguage(value) {
+    setLanguage(value);
   }
 
   function clearCheckedItems() {
@@ -92,7 +101,7 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      language, toggleLanguage,
+      language, changeLanguage,
       inventory, shoppingList,
       addInventoryItem, removeInventoryItem, updateInventoryItem, changeQuantity,
       addShoppingItem, removeShoppingItem, toggleShoppingItem, clearCheckedItems,
