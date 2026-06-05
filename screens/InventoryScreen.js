@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, FlatList, TextInput, TouchableOpacity,
-  StyleSheet, KeyboardAvoidingView, Platform,
+  StyleSheet, KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore, CATEGORIES } from '../store';
@@ -21,6 +21,19 @@ export default function InventoryScreen() {
   const [inputName, setInputName] = useState('');
   const [inputCategory, setInputCategory] = useState(CATEGORIES[0]);
   const [updatingId, setUpdatingId] = useState(null);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
+      const h = e && e.endCoordinates ? e.endCoordinates.height : 300;
+      setKeyboardOffset(h);
+    });
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => setKeyboardOffset(0));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   function openAdd() {
     setEditingItem(null);
@@ -128,12 +141,13 @@ export default function InventoryScreen() {
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           >
-            <View style={styles.sheet}>
+            <View style={[styles.sheet, { marginBottom: keyboardOffset }]}>
               <Text style={styles.sheetTitle}>{editingItem ? t.editItemTitle : t.addItemTitle}</Text>
 
               <TextInput
                 style={styles.sheetInput}
                 placeholder={t.itemName}
+                placeholderTextColor="#585858"
                 value={inputName}
                 onChangeText={setInputName}
                 autoFocus

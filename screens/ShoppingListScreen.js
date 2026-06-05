@@ -60,6 +60,7 @@ export default function ShoppingListScreen() {
         <TextInput
           style={styles.input}
           placeholder={t.addItem}
+          placeholderTextColor="#585858"
           value={inputText}
           onChangeText={setInputText}
           onSubmitEditing={handleAdd}
